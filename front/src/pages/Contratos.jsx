@@ -68,6 +68,7 @@ function Contratos() {
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {/* TODO: Bug #2 - missing overflow-x-auto wrapper for mobile responsiveness */}
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
@@ -112,6 +113,7 @@ function Contratos() {
             )}
           </tbody>
         </table>
+        </div>
 
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t">

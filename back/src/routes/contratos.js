@@ -13,6 +13,7 @@ const {
 
 router.get('/', getContratos);
 router.get('/:id', getContrato);
+router.post('/', createContrato);
 router.put('/:id', updateContrato);
 router.delete('/:id', deleteContrato);
 router.post('/:id/reenviar', reenviarContrato);

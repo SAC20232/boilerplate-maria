@@ -16,8 +16,29 @@ function getContratos(req, res) {
   const limit = 10;
   const offset = (page - 1) * limit;
 
+  const status = req.query.status;
+  const nombre = req.query.nombre;
+
+
   const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+
+  let contratos;
+  let query = "SELECT * FROM contratos WHERE 1 = 1";
+  const parameters = [];
+
+  if (status === "Pendiente de firma" || status === "Firmado") {
+    query += " AND LOWER(status) LIKE LOWER(?)";
+    parameters.push(status);
+  }
+  if (nombre) {
+    query += " AND LOWER(nombre) LIKE LOWER(?)";
+    parameters.push('%' + nombre + '%');
+  }
+
+  query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+  parameters.push(limit, offset);
+
+  contratos = db.prepare(query).all(...parameters);
 
   res.json({
     data: contratos,
@@ -42,7 +63,7 @@ function getContrato(req, res) {
   }
 
   // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
+  // const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
 
   res.json({ ...contrato, _duplicate: extraData });
 }
