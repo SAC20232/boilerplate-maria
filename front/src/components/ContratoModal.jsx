@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { contratosApi } from '../utils/api.js';
 
 const initialForm = {
@@ -9,42 +9,87 @@ const initialForm = {
   fecha_reserva: '',
 };
 
-// TODO: Bug #3 - Inline validation doesn't work correctly
-// The errors state is declared but validation runs only on submit, not on field change
-// Fix: add onChange validation per field or use a proper validation library
-function ContratoModal({ onClose, onSuccess }) {
-  const [form, setForm] = useState(initialForm);
+const editableFields = ['nombre', 'apellidos', 'telefono', 'email', 'fecha_reserva'];
+
+function buildFormFromContrato(contrato) {
+  if (!contrato) return { ...initialForm };
+
+  return editableFields.reduce((acc, field) => ({ ...acc, [field]: contrato[field] ?? '' }), { ...initialForm });
+}
+
+// Add contract edit modal with validation and error handling
+function ContratoModal({ onClose, onSuccess, contratoToEdit }) {
+  const [form, setForm] = useState(() => buildFormFromContrato(contratoToEdit));
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setForm(buildFormFromContrato(contratoToEdit));
+    setErrors({});
+  }, [contratoToEdit]);
+
   function handleChange(e) {
     const { name, value } = e.target;
+
+    // Real-time validation: Phone number only accepts digits
+    if (name === 'telefono' && value && !/^\d+$/.test(value)) {
+      return; // Ignore change if value is not a number
+    }
+
     setForm((prev) => ({ ...prev, [name]: value }));
-    // TODO: Bug #3 - validation should clear/set error here on each keystroke
-    // Currently errors only reset on submit, giving misleading UX
+
+    // FIX: Clear specific field error as soon as the user starts typing 
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   }
 
   function validate() {
     const newErrors = {};
+
+    // Required fields validation
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
     if (!form.apellidos.trim()) newErrors.apellidos = 'Los apellidos son obligatorios';
-    if (!form.telefono.trim()) newErrors.telefono = 'El teléfono es obligatorio';
+
+    // Phone validation (required and format)
+    if (!form.telefono.trim()) {
+      newErrors.telefono = 'El teléfono es obligatorio';
+    } else if (!/^\d+$/.test(form.telefono)) {
+      newErrors.telefono = 'El teléfono solo debe contener números';
+    }
+
+    // Email validation
     if (!form.email.trim()) {
       newErrors.email = 'El email es obligatorio';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = 'El email no es válido';
     }
-    if (!form.fecha_reserva) newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+
+    // Reservation date validation
+    if (!form.fecha_reserva) {
+      newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+    } else {
+      // Get today's date in YYYY-MM-DD format to compare with the input
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayString = `${yyyy}-${mm}-${dd}`;
+
+      if (form.fecha_reserva < todayString) {
+        newErrors.fecha_reserva = 'La fecha de reserva no puede ser anterior a hoy';
+      }
+    }
+
     return newErrors;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     const newErrors = validate();
-
-    // TODO: Bug #3 - Even when errors exist, the form tries to submit anyway
-    // because the condition below is inverted
-    if (Object.keys(newErrors).length === 0) {
+    
+    // Check if there are validation errors, set them in state and prevent submission
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -52,15 +97,19 @@ function ContratoModal({ onClose, onSuccess }) {
     setErrors({});
     setLoading(true);
 
+    // Add logic to handle both create and edit contract flows
     try {
-      const { data } = await contratosApi.create(form);
-      onSuccess(data);
-      // TODO: Bug #1 - Modal doesn't close after successful submit
-      // Fix: uncomment the line below
-      // onClose();
+      if (contratoToEdit) {
+        // Edit flow
+        await contratosApi.update(contratoToEdit.id, form);
+      } else {
+        // Create flow
+        await contratosApi.create(form);
+      }
+      onSuccess(); // Refresh the contratos list in the parent component
     } catch (err) {
-      console.error('Error creating contrato:', err);
-      setErrors({ submit: err.response?.data?.error || 'Error al crear el contrato' });
+      console.error('Error saving contrato:', err);
+      setErrors({ submit: err.response?.data?.error || 'Error al procesar el contrato' });
     } finally {
       setLoading(false);
     }
@@ -78,7 +127,7 @@ function ContratoModal({ onClose, onSuccess }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-800">Nuevo Contrato</h3>
+          <h3 className="text-lg font-bold text-gray-800">{contratoToEdit ? 'Editar Contrato' : 'Nuevo Contrato'}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
         </div>
 
@@ -91,6 +140,8 @@ function ContratoModal({ onClose, onSuccess }) {
                 name={field.name}
                 value={form[field.name]}
                 onChange={handleChange}
+                // Native HTML 'min' attribute to block past dates in the visual calendar
+                min={field.type === 'date' ? new Date().toISOString().split('T')[0] : undefined}
                 className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors[field.name] ? 'border-red-400' : 'border-gray-300'
                 }`}
