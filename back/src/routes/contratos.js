@@ -12,6 +12,7 @@ const {
 } = require('../controllers/contratosController');
 
 router.get('/', getContratos);
+router.post('/', createContrato);
 router.get('/:id', getContrato);
 router.put('/:id', updateContrato);
 router.delete('/:id', deleteContrato);
