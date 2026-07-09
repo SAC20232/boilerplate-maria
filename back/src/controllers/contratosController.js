@@ -31,20 +31,20 @@ function getContratos(req, res) {
 }
 
 function getContrato(req, res) {
-  const { id } = req.params;
+    const { id } = req.params;
 
-  // TODO: Bug #2 - N+1 query problem: this runs an extra unnecessary query
-  // Fix: just use the single query below and return contrato directly
-  const contrato = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
+    const contrato = db.prepare(
+        'SELECT * FROM contratos WHERE id = ?'
+    ).get(id);
 
-  if (!contrato) {
-    return res.status(404).json({ error: 'Contrato no encontrado', status: 404 });
-  }
+    if (!contrato) {
+        return res.status(404).json({
+            error: 'Contrato no encontrado',
+            status: 404
+        });
+    }
 
-  // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
-
-  res.json({ ...contrato, _duplicate: extraData });
+    res.json(contrato);
 }
 
 function createContrato(req, res) {
