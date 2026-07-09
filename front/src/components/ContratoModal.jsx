@@ -17,9 +17,24 @@ function ContratoModal({ onClose, onSuccess }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+function handleChange(e) {
+  const { name, value } = e.target;
+    const updatedForm = {
+    ...form,
+    [name]: value,
+  };
+
+  setForm(updatedForm);
+
+  if (errors[name]) {
+    const updatedErrors = { ...errors };
+
+  if (value.trim()) {
+      delete updatedErrors[name];
+    }
+
+    setErrors(updatedErrors);
+  }
     // TODO: Bug #3 - validation should clear/set error here on each keystroke
     // Currently errors only reset on submit, giving misleading UX
   }
@@ -44,7 +59,7 @@ function ContratoModal({ onClose, onSuccess }) {
 
     // TODO: Bug #3 - Even when errors exist, the form tries to submit anyway
     // because the condition below is inverted
-    if (Object.keys(newErrors).length === 0) {
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -57,7 +72,7 @@ function ContratoModal({ onClose, onSuccess }) {
       onSuccess(data);
       // TODO: Bug #1 - Modal doesn't close after successful submit
       // Fix: uncomment the line below
-      // onClose();
+      onClose();
     } catch (err) {
       console.error('Error creating contrato:', err);
       setErrors({ submit: err.response?.data?.error || 'Error al crear el contrato' });
