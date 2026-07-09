@@ -11,13 +11,51 @@ const contratoSchema = Joi.object({
   fecha_reserva: Joi.string().isoDate().required(),
 });
 
+
+
 function getContratos(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  const { status, nombre } = req.query;
+
+  let where = [];
+  let params = [];
+
+  if (status) {
+    where.push("status = ?");
+    params.push(status);
+  }
+
+  if (nombre) {
+    where.push("LOWER(nombre) LIKE LOWER(?)");
+    params.push(`%${nombre}%`);
+  }
+
+  const whereClause =
+    where.length > 0
+      ? `WHERE ${where.join(" AND ")}`
+      : "";
+
+  const total = db
+    .prepare(`
+      SELECT COUNT(*) AS count
+      FROM contratos
+      ${whereClause}
+    `)
+    .get(...params).count;
+
+  const contratos = db
+    .prepare(`
+      SELECT *
+      FROM contratos
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT ?
+      OFFSET ?
+    `)
+    .all(...params, limit, offset);
 
   res.json({
     data: contratos,

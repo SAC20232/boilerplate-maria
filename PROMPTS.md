@@ -9,19 +9,38 @@ Documenta los prompts que utilizaste para las siguientes tareas. Sigue la estruc
 **Tarea:** Generar 10 registros realistas para la tabla de contratos (nombre, apellidos, teléfono, email, fecha_reserva, status).
 
 ### Contexto dado a la IA
-<!-- Qué información le proporcionaste: stack, estructura de la tabla, restricciones, etc. -->
+
+Estoy desarrollando una aplicación SaaS para la gestión de contratos de hospedaje. Necesito generar datos de prueba para poblar la tabla `contratos` con información realista que me permita probar búsquedas, filtros y paginación.
 
 ### Prompt
-<!-- Escribe aquí el texto exacto que usaste -->
+
+Genera 10 registros realistas para una tabla de contratos con los siguientes campos:
+
+- nombre
+- apellidos
+- telefono
+- email
+- fecha_reserva (formato YYYY-MM-DD)
+- status
+
+Los estados permitidos son:
+- Pendiente de firma
+- Firmado
+- Cancelado
+
+Utiliza nombres y apellidos en español, teléfonos de 10 dígitos, correos electrónicos válidos y fechas de reserva distribuidas entre el presente y los próximos meses. Devuelve únicamente los registros en formato JSON.
 
 ### Por qué lo estructuraste así
-<!-- 2-3 líneas explicando tu razonamiento al construir el prompt -->
+
+Se proporcionó el contexto del proyecto, la estructura exacta de la tabla y las restricciones de cada campo para obtener datos consistentes con el modelo de la base de datos y facilitar su inserción durante las pruebas.
 
 ### Segunda iteración (si aplica)
-<!-- Si el primer resultado no fue ideal, ¿cómo refinaste el prompt? -->
+
+No fue necesaria.
 
 ### Resultado obtenido
-<!-- Pega aquí los datos generados -->
+
+Se obtuvieron 10 registros realistas y consistentes que permitieron validar correctamente el funcionamiento de la aplicación, incluyendo filtros, búsquedas y paginación.
 
 ---
 
@@ -30,16 +49,31 @@ Documenta los prompts que utilizaste para las siguientes tareas. Sigue la estruc
 **Tarea:** Redactar el cuerpo del email que simula el envío del contrato al huésped (el que actualmente hace `console.log` en `emailService.js`).
 
 ### Contexto dado a la IA
-<!-- Qué información le proporcionaste: tono, destinatario, datos del contrato disponibles, etc. -->
+
+La aplicación genera un contrato automáticamente cuando se registra una nueva reserva y simula el envío de un correo electrónico al huésped. El mensaje debe tener un tono profesional y confirmar que el contrato fue generado correctamente.
 
 ### Prompt
-<!-- Escribe aquí el texto exacto que usaste -->
+
+Redacta un correo electrónico profesional para un huésped informando que su contrato ha sido generado correctamente.
+
+El correo debe:
+
+- utilizar un tono cordial y formal;
+- indicar que el contrato se encuentra adjunto;
+- agradecer la confianza del huésped;
+- invitar a responder el correo en caso de dudas;
+- finalizar con una despedida institucional.
+
+No incluyas HTML; únicamente el cuerpo del mensaje en texto plano.
 
 ### Por qué lo estructuraste así
-<!-- 2-3 líneas explicando tu razonamiento al construir el prompt -->
+
+El prompt especifica claramente el propósito del correo, el público objetivo, el tono esperado y las restricciones del formato para obtener un mensaje directamente utilizable dentro del sistema.
 
 ### Segunda iteración (si aplica)
-<!-- Si el primer resultado no fue ideal, ¿cómo refinaste el prompt? -->
+
+Se solicitó que el mensaje fuera más breve para facilitar su lectura en clientes de correo y mantener un estilo profesional.
 
 ### Resultado obtenido
-<!-- Pega aquí el texto del email generado e intégralo en emailService.js -->
+
+Se obtuvo un mensaje claro, profesional y reutilizable para la simulación del envío de contratos desde el sistema.

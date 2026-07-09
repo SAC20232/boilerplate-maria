@@ -18,10 +18,22 @@ function ContratoModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    // TODO: Bug #3 - validation should clear/set error here on each keystroke
-    // Currently errors only reset on submit, giving misleading UX
+      const { name, value } = e.target;
+
+      let newValue = value;
+
+      if (name === "telefono") {
+          newValue = value.replace(/\D/g, "");
+      }
+
+      setForm((prev) => ({
+          ...prev,
+          [name]: newValue
+      }));
+        setErrors((prev) => ({
+      ...prev,
+      [name]: ""
+  }));
   }
 
   function validate() {
@@ -35,6 +47,15 @@ function ContratoModal({ onClose, onSuccess }) {
       newErrors.email = 'El email no es válido';
     }
     if (!form.fecha_reserva) newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+      const today = new Date().toISOString().split("T")[0];
+
+  if (
+      form.fecha_reserva &&
+      form.fecha_reserva < today
+  ) {
+      newErrors.fecha_reserva =
+          "La fecha no puede ser anterior a hoy";
+  }
     return newErrors;
   }
 
@@ -88,8 +109,13 @@ function ContratoModal({ onClose, onSuccess }) {
           {fields.map((field) => (
             <div key={field.name}>
               <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
-              <input
-                type={field.type}
+  <input
+      type={field.type}
+      min={
+          field.name === "fecha_reserva"
+              ? new Date().toISOString().split("T")[0]
+              : undefined
+      }
                 name={field.name}
                 value={form[field.name]}
                 onChange={handleChange}
