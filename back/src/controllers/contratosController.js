@@ -12,12 +12,41 @@ const contratoSchema = Joi.object({
 });
 
 function getContratos(req, res) {
-  const page = parseInt(req.query.page) || 1;
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  const { status, nombre } = req.query;
+
+  const where = [];
+  const params = [];
+
+  if (status) {
+    where.push('LOWER(status) = LOWER(?)');
+    params.push(status);
+  }
+
+  if (nombre) {
+    where.push("LOWER(COALESCE(nombre, '') || ' ' || COALESCE(apellidos, '')) LIKE LOWER(?)");
+    params.push(`%${nombre}%`);
+  }
+
+  const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+
+  const total = db
+    .prepare(`SELECT COUNT(*) as count FROM contratos ${whereSql}`)
+    .get(...params).count;
+
+  const contratos = db
+    .prepare(`
+      SELECT *
+      FROM contratos
+      ${whereSql}
+      ORDER BY created_at DESC
+      LIMIT ?
+      OFFSET ?
+    `)
+    .all(...params, limit, offset);
 
   res.json({
     data: contratos,

@@ -9,6 +9,10 @@ const initialForm = {
   fecha_reserva: '',
 };
 
+function getTodayDate() {
+  return new Date().toISOString().split('T')[0];
+}
+
 // TODO: Bug #3 - Inline validation doesn't work correctly
 // The errors state is declared but validation runs only on submit, not on field change
 // Fix: add onChange validation per field or use a proper validation library
@@ -19,39 +23,57 @@ function ContratoModal({ onClose, onSuccess }) {
 
 function handleChange(e) {
   const { name, value } = e.target;
-    const updatedForm = {
+
+  const cleanValue = name === 'telefono'
+    ? value.replace(/\D/g, '')
+    : value;
+
+  const updatedForm = {
     ...form,
-    [name]: value,
+    [name]: cleanValue,
   };
 
   setForm(updatedForm);
 
-  if (errors[name]) {
-    const updatedErrors = { ...errors };
-
-  if (value.trim()) {
-      delete updatedErrors[name];
-    }
-
-    setErrors(updatedErrors);
+  if (Object.keys(errors).length > 0) {
+    setErrors(validate(updatedForm));
   }
     // TODO: Bug #3 - validation should clear/set error here on each keystroke
     // Currently errors only reset on submit, giving misleading UX
   }
 
-  function validate() {
-    const newErrors = {};
-    if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
-    if (!form.apellidos.trim()) newErrors.apellidos = 'Los apellidos son obligatorios';
-    if (!form.telefono.trim()) newErrors.telefono = 'El teléfono es obligatorio';
-    if (!form.email.trim()) {
-      newErrors.email = 'El email es obligatorio';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = 'El email no es válido';
-    }
-    if (!form.fecha_reserva) newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
-    return newErrors;
+function validate(currentForm = form) {
+  const newErrors = {};
+  const today = getTodayDate();
+
+  if (!currentForm.nombre.trim()) {
+    newErrors.nombre = 'El nombre es obligatorio';
   }
+
+  if (!currentForm.apellidos.trim()) {
+    newErrors.apellidos = 'Los apellidos son obligatorios';
+  }
+
+  if (!currentForm.telefono.trim()) {
+    newErrors.telefono = 'El telefono es obligatorio';
+  } else if (!/^\d+$/.test(currentForm.telefono)) {
+    newErrors.telefono = 'El telefono solo debe contener digitos';
+  }
+
+  if (!currentForm.email.trim()) {
+    newErrors.email = 'El email es obligatorio';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentForm.email)) {
+    newErrors.email = 'El email no es valido';
+  }
+
+  if (!currentForm.fecha_reserva) {
+    newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+  } else if (currentForm.fecha_reserva < today) {
+    newErrors.fecha_reserva = 'La fecha de reserva no puede ser anterior a hoy';
+  }
+
+  return newErrors;
+}
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -101,15 +123,18 @@ function handleChange(e) {
           {fields.map((field) => (
             <div key={field.name}>
               <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
-              <input
-                type={field.type}
-                name={field.name}
-                value={form[field.name]}
-                onChange={handleChange}
-                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors[field.name] ? 'border-red-400' : 'border-gray-300'
-                }`}
-              />
+        <input
+          type={field.type}
+          name={field.name}
+          value={form[field.name]}
+          onChange={handleChange}
+          min={field.name === 'fecha_reserva' ? getTodayDate() : undefined}
+          inputMode={field.name === 'telefono' ? 'numeric' : undefined}
+          pattern={field.name === 'telefono' ? '[0-9]*' : undefined}
+          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            errors[field.name] ? 'border-red-400' : 'border-gray-300'
+          }`}
+        />
               {errors[field.name] && (
                 <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>
               )}
