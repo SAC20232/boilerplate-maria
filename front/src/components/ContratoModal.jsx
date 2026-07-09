@@ -44,17 +44,19 @@ function ContratoModal({ onClose, onSuccess }) {
 
     // TODO: Bug #3 - Even when errors exist, the form tries to submit anyway
     // because the condition below is inverted
-    if (Object.keys(newErrors).length === 0) {
+
+  if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
-    }
+  }
 
-    setErrors({});
+  setErrors({});
     setLoading(true);
 
     try {
       const { data } = await contratosApi.create(form);
       onSuccess(data);
+      onClose();
       // TODO: Bug #1 - Modal doesn't close after successful submit
       // Fix: uncomment the line below
       // onClose();
