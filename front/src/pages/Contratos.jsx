@@ -66,9 +66,11 @@ function Contratos() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {/* TODO: Bug #2 - missing overflow-x-auto wrapper for mobile responsiveness */}
-        <table className="w-full text-sm">
+  <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+
+      <div className="overflow-x-auto">
+
+          <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
               {['Nombre', 'Apellidos', 'Teléfono', 'Email', 'Fecha Reserva', 'Contrato', 'Status', 'Acciones'].map((h) => (
@@ -111,9 +113,12 @@ function Contratos() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
 
-        {pagination.totalPages > 1 && (
+      </div>
+
+      {pagination.totalPages > 1 && (
+
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <p className="text-sm text-gray-500">
               Página {pagination.page} de {pagination.totalPages} ({pagination.total} registros)
