@@ -12,12 +12,41 @@ const contratoSchema = Joi.object({
 });
 
 function getContratos(req, res) {
-  const page = parseInt(req.query.page) || 1;
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  const { status, nombre } = req.query;
+
+  const where = [];
+  const params = [];
+
+  if (status) {
+    where.push('LOWER(status) = LOWER(?)');
+    params.push(status);
+  }
+
+  if (nombre) {
+    where.push("LOWER(COALESCE(nombre, '') || ' ' || COALESCE(apellidos, '')) LIKE LOWER(?)");
+    params.push(`%${nombre}%`);
+  }
+
+  const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+
+  const total = db
+    .prepare(`SELECT COUNT(*) as count FROM contratos ${whereSql}`)
+    .get(...params).count;
+
+  const contratos = db
+    .prepare(`
+      SELECT *
+      FROM contratos
+      ${whereSql}
+      ORDER BY created_at DESC
+      LIMIT ?
+      OFFSET ?
+    `)
+    .all(...params, limit, offset);
 
   res.json({
     data: contratos,
@@ -38,13 +67,14 @@ function getContrato(req, res) {
   const contrato = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
 
   if (!contrato) {
-    return res.status(404).json({ error: 'Contrato no encontrado', status: 404 });
+    return res.status(404).json({
+      error: 'Contrato no encontrado',
+      status: 404,
+    });
   }
 
   // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
-
-  res.json({ ...contrato, _duplicate: extraData });
+  return res.json(contrato);
 }
 
 function createContrato(req, res) {
