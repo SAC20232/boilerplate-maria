@@ -23,4 +23,6 @@ router.patch('/:id/cancelar', cancelarContrato);
 // Fix: add the following line:
 // router.post('/', createContrato);
 
+router.post('/', createContrato);
+
 module.exports = router;

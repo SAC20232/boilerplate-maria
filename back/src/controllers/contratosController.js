@@ -11,13 +11,51 @@ const contratoSchema = Joi.object({
   fecha_reserva: Joi.string().isoDate().required(),
 });
 
+
+
 function getContratos(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  const { status, nombre } = req.query;
+
+  let where = [];
+  let params = [];
+
+  if (status) {
+    where.push("status = ?");
+    params.push(status);
+  }
+
+  if (nombre) {
+    where.push("LOWER(nombre) LIKE LOWER(?)");
+    params.push(`%${nombre}%`);
+  }
+
+  const whereClause =
+    where.length > 0
+      ? `WHERE ${where.join(" AND ")}`
+      : "";
+
+  const total = db
+    .prepare(`
+      SELECT COUNT(*) AS count
+      FROM contratos
+      ${whereClause}
+    `)
+    .get(...params).count;
+
+  const contratos = db
+    .prepare(`
+      SELECT *
+      FROM contratos
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT ?
+      OFFSET ?
+    `)
+    .all(...params, limit, offset);
 
   res.json({
     data: contratos,
@@ -31,20 +69,20 @@ function getContratos(req, res) {
 }
 
 function getContrato(req, res) {
-  const { id } = req.params;
+    const { id } = req.params;
 
-  // TODO: Bug #2 - N+1 query problem: this runs an extra unnecessary query
-  // Fix: just use the single query below and return contrato directly
-  const contrato = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
+    const contrato = db.prepare(
+        'SELECT * FROM contratos WHERE id = ?'
+    ).get(id);
 
-  if (!contrato) {
-    return res.status(404).json({ error: 'Contrato no encontrado', status: 404 });
-  }
+    if (!contrato) {
+        return res.status(404).json({
+            error: 'Contrato no encontrado',
+            status: 404
+        });
+    }
 
-  // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
-
-  res.json({ ...contrato, _duplicate: extraData });
+    res.json(contrato);
 }
 
 function createContrato(req, res) {
