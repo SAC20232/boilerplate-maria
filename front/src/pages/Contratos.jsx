@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ContratoModal from '../components/ContratoModal.jsx';
 import { contratosApi } from '../utils/api.js';
 import { formatDate } from '../utils/helpers.js';
@@ -23,7 +23,7 @@ function Contratos() {
     }, 3000);
   };
 
-  async function fetchContratos(page = 1) {
+  const fetchContratos = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const { data } = await contratosApi.getAll(page);
@@ -34,11 +34,11 @@ function Contratos() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchContratos(pagination.page);
-  }, [pagination.page]);
+  }, [fetchContratos, pagination.page]);
 
   async function handleAction(action, id) {
     try {
@@ -69,6 +69,7 @@ function Contratos() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Contratos</h2>
         <button
+          type="button"
           onClick={() => setShowModal(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
         >
@@ -78,50 +79,96 @@ function Contratos() {
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[800px]">
-          <thead className="bg-gray-50">
-            <tr>
-              {['Nombre', 'Apellidos', 'Teléfono', 'Email', 'Fecha Reserva', 'Contrato', 'Status', 'Acciones'].map((h) => (
-                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
+          <table className="w-full text-sm min-w-[800px]">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">Cargando...</td>
+                {[
+                  'Nombre',
+                  'Apellidos',
+                  'Teléfono',
+                  'Email',
+                  'Fecha Reserva',
+                  'Contrato',
+                  'Status',
+                  'Acciones',
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-gray-500 font-medium whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
-            ) : contratos.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">No hay contratos</td>
-              </tr>
-            ) : (
-              contratos.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-800">{c.nombre}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.apellidos}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.telefono}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.email}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(c.fecha_reserva)}</td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{c.contrato || '-'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[c.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <button onClick={() => handleAction('editar', c.id)} className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">Editar</button>
-                      <button onClick={() => handleAction('reenviar', c.id)} className="px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded hover:bg-gray-100">Reenviar</button>
-                      <button onClick={() => handleAction('cancelar', c.id)} className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100">Cancelar</button>
-                      <button onClick={() => handleAction('firmar', c.id)} className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100">Firmar</button>
-                    </div>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                    Cargando...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : contratos.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                    No hay contratos
+                  </td>
+                </tr>
+              ) : (
+                contratos.map((c) => (
+                  <tr key={c.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-800">{c.nombre}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.apellidos}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.telefono}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.email}</td>
+                    <td className="px-4 py-3 text-gray-600">{formatDate(c.fecha_reserva)}</td>
+                    <td className="px-4 py-3 text-gray-600 text-xs">{c.contrato || '-'}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          statusColors[c.status] || 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleAction('editar', c.id)}
+                          className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAction('reenviar', c.id)}
+                          className="px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded hover:bg-gray-100"
+                        >
+                          Reenviar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAction('cancelar', c.id)}
+                          className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAction('firmar', c.id)}
+                          className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100"
+                        >
+                          Firmar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
         {pagination.totalPages > 1 && (
@@ -131,6 +178,7 @@ function Contratos() {
             </p>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setPagination((p) => ({ ...p, page: p.page - 1 }))}
                 disabled={pagination.page <= 1}
                 className="px-3 py-1 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50"
@@ -138,6 +186,7 @@ function Contratos() {
                 Anterior
               </button>
               <button
+                type="button"
                 onClick={() => setPagination((p) => ({ ...p, page: p.page + 1 }))}
                 disabled={pagination.page >= pagination.totalPages}
                 className="px-3 py-1 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50"
@@ -150,17 +199,25 @@ function Contratos() {
       </div>
 
       {showModal && (
-        <ContratoModal
-          onClose={() => setShowModal(false)}
-          onSuccess={handleNewContrato}
-        />
+        <ContratoModal onClose={() => setShowModal(false)} onSuccess={handleNewContrato} />
       )}
 
       {toast.show && (
         <div className="fixed bottom-4 right-4 z-50 animate-fade-in-up">
           <div className="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
-            <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-6 h-6 text-green-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <title>Éxito</title>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span className="font-medium text-sm">{toast.message}</span>
           </div>

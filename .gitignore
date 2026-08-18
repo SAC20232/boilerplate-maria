@@ -1,6 +1,10 @@
 # Claude
 .claude/
 
+# SDD / ATL Tooling
+.atl/
+
+
 # Dependencies
 node_modules/
 **/node_modules/

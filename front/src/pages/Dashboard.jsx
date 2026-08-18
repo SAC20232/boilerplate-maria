@@ -17,7 +17,9 @@ function StatCard({ label, value, change, color }) {
     <div className="bg-white rounded-xl shadow-sm p-6">
       <p className="text-sm text-gray-500 mb-1">{label}</p>
       <p className="text-3xl font-bold text-gray-800">{value}</p>
-      <span className={`inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium ${colors[color]}`}>
+      <span
+        className={`inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium ${colors[color]}`}
+      >
         {change} vs mes anterior
       </span>
     </div>
@@ -37,10 +39,19 @@ function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="font-semibold text-gray-700 mb-4">Reservas Recientes</h3>
           <div className="space-y-3">
-            {['Habitación 101 - Carlos Ruiz', 'Suite 205 - Ana López', 'Habitación 308 - Pedro Martín'].map((item) => (
-              <div key={item} className="flex items-center justify-between py-2 border-b last:border-0">
+            {[
+              'Habitación 101 - Carlos Ruiz',
+              'Suite 205 - Ana López',
+              'Habitación 308 - Pedro Martín',
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center justify-between py-2 border-b last:border-0"
+              >
                 <span className="text-sm text-gray-600">{item}</span>
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Confirmada</span>
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                  Confirmada
+                </span>
               </div>
             ))}
           </div>
@@ -48,10 +59,19 @@ function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="font-semibold text-gray-700 mb-4">Tickets Pendientes</h3>
           <div className="space-y-3">
-            {['Solicitud mantenimiento AC', 'Limpieza extra habitación 202', 'Pedido room service'].map((item) => (
-              <div key={item} className="flex items-center justify-between py-2 border-b last:border-0">
+            {[
+              'Solicitud mantenimiento AC',
+              'Limpieza extra habitación 202',
+              'Pedido room service',
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center justify-between py-2 border-b last:border-0"
+              >
                 <span className="text-sm text-gray-600">{item}</span>
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">Pendiente</span>
+                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
+                  Pendiente
+                </span>
               </div>
             ))}
           </div>

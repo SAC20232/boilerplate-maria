@@ -17,7 +17,7 @@ function ContratoModal({ onClose, onSuccess }) {
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
@@ -25,10 +25,10 @@ function ContratoModal({ onClose, onSuccess }) {
 
   function validate() {
     const newErrors = {};
-    
+
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
     if (!form.apellidos.trim()) newErrors.apellidos = 'Los apellidos son obligatorios';
-    
+
     if (!form.telefono.trim()) {
       newErrors.telefono = 'El teléfono es obligatorio';
     } else if (!/^\d+$/.test(form.telefono.trim())) {
@@ -37,10 +37,10 @@ function ContratoModal({ onClose, onSuccess }) {
 
     if (!form.email.trim()) {
       newErrors.email = 'El email es obligatorio';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       newErrors.email = 'El email no es válido';
     }
-    
+
     if (!form.fecha_reserva) {
       newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
     } else {
@@ -49,7 +49,7 @@ function ContratoModal({ onClose, onSuccess }) {
         newErrors.fecha_reserva = 'La fecha no puede ser en el pasado';
       }
     }
-    
+
     return newErrors;
   }
 
@@ -80,7 +80,7 @@ function ContratoModal({ onClose, onSuccess }) {
   const fields = [
     { name: 'nombre', label: 'Nombre', type: 'text', placeholder: 'Ej. Jose' },
     { name: 'apellidos', label: 'Apellidos', type: 'text', placeholder: 'Ej. Pinto' },
-    { name: 'telefono', label: 'Teléfono', type: 'tel', placeholder: 'Ej. 123-456-7890' },
+    { name: 'telefono', label: 'Teléfono', type: 'tel', placeholder: 'Ej. 5512349876' },
     { name: 'email', label: 'Email', type: 'email', placeholder: 'Ej. jose.pinto@example.com' },
     { name: 'fecha_reserva', label: 'Fecha de Reserva', type: 'date' },
   ];
@@ -90,14 +90,23 @@ function ContratoModal({ onClose, onSuccess }) {
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-800">Nuevo Contrato</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+          >
+            ×
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {fields.map((field) => (
             <div key={field.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+              <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
+                {field.label}
+              </label>
               <input
+                id={field.name}
                 type={field.type}
                 name={field.name}
                 value={form[field.name]}
@@ -114,9 +123,7 @@ function ContratoModal({ onClose, onSuccess }) {
             </div>
           ))}
 
-          {errors.submit && (
-            <p className="text-red-500 text-sm">{errors.submit}</p>
-          )}
+          {errors.submit && <p className="text-red-500 text-sm">{errors.submit}</p>}
 
           <div className="flex gap-3 pt-2">
             <button
