@@ -2,30 +2,75 @@
 
 Sistema SaaS de hospitality con gestión de contratos, reservas y tickets.
 
+---
+
 ## Despliegues (Live Demo)
-Para facilitar la revisión, ambos proyectos fueron desplegados:
-- **Frontend (App):** [https://maria-saas.vercel.app/](https://maria-saas.vercel.app/)
-- **Backend (API):** [https://maria-saas-api.onrender.com/](https://maria-saas-api.onrender.com/)
+
+### 🚀 Despliegue de la Solución (Candidato: Herzon Palma)
+- **Frontend (App en Vivo):** [https://boilerplate-maria.vercel.app/](https://boilerplate-maria.vercel.app/)
+- **Backend (API en Vivo):** [https://boilerplate-maria.onrender.com/](https://boilerplate-maria.onrender.com/)
+
+### 📌 Despliegues Originales de Referencia (Plantilla Base)
+- **Frontend (Referencia):** [https://maria-saas.vercel.app/](https://maria-saas.vercel.app/)
+- **Backend (Referencia):** [https://maria-saas-api.onrender.com/](https://maria-saas-api.onrender.com/)
 
 ---
 
-## Estructura
+## Resumen de Solución y Entregables (Candidato: Herzon Palma)
+
+### 1. Resolución de Bugs Core
+
+#### Backend (`back/`)
+- **Bug 1 (`POST /contratos` retorna 404)**: Ruta registrada en `back/src/routes/contratos.js` vinculada al controlador `createContrato`, respondiendo con HTTP 201 y generando el documento de contrato.
+- **Bug 2 (`GET /contratos/:id` duplica query / N+1)**: Eliminada la consulta redundante de verificación previa en `back/src/controllers/contratosController.js`, ejecutando una única consulta directa parametrizada.
+- **Bug 3 (`DB_PATH` undefined en conexión)**: Configuración en `back/.env` con `DB_PATH=./database.sqlite` y resolución de fallback seguro mediante `path.join` en `back/src/database/db.js`.
+
+#### Frontend (`front/`)
+- **Bug 1 (Modal no cierra tras submit)**: Descomentada la invocación de `onClose()` en `front/src/components/ContratoModal.jsx` tras la creación exitosa con HTTP 201.
+- **Bug 2 (Tabla no responsive en móvil)**: Envoltorio en contenedor con `overflow-x-auto` y tabla con `min-w-[800px]` en `front/src/pages/Contratos.jsx` para permitir desplazamiento horizontal limpio en dispositivos móviles sin desbordar la vista.
+- **Bug 3 (Validación inline incorrecta)**: Inversión de las condiciones lógicas erróneas en `ContratoModal.jsx` para mostrar correctamente los estados de error.
+
+---
+
+### 2. Implementación de Características Bonus
+
+- **Validaciones Avanzadas de Formulario (`ContratoModal.jsx` y `helpers.js`)**:
+  - Teléfono restringido estrictamente a dígitos numéricos (`/^\d+$/`, entre 6 y 20 dígitos).
+  - Fecha de reserva obligatoria y con restricción $\ge$ día de hoy (`YYYY-MM-DD`).
+  - Detección de campos obligatorios vacíos al hacer submit con mensajes inline y bordes dinámicos de error (`border-red-400`).
+- **Filtrado y Búsqueda Dinámica en Backend (`contratosController.js`)**:
+  - Filtro por estado (`status`) y búsqueda parcial case-insensitive por nombre/apellidos (`nombre`) usando sentencias SQL estrictamente parametrizadas con placeholders `?` para prevenir inyección SQL (CWE-89).
+  - Sincronización exacta de `pagination.total` y `totalPages` mediante consulta de conteo filtrada (`SELECT COUNT(*)`).
+- **Documentación de Prompt Engineering (`PROMPTS.md`)**:
+  - Registro de prompts para generación de 10 registros SQL y plantilla de copywriting de email transaccional con variables JavaScript.
+  - Documentación de la estrategia de Prompt Engineering y arquitectura multi-agente bajo metodología **SDD (Spec-Driven Development)**.
+
+---
+
+### 3. Resultados de Pruebas y Control de Calidad
+
+- **Backend (`back/`)**: **19/19 tests unitarios e integración pasando** (`cd back && npm test`).
+- **Frontend (`front/`)**: **11/11 tests unitarios pasando** (`cd front && npm test`).
+- **Linter & Accesibilidad (`front/`)**: **0 errores / 0 warnings** con Biome (`npm run lint`).
+- **Configuración SPA para Producción**: Inclusión de `front/vercel.json` con reglas de reescritura para soporte de rutas directas y recargas en Vercel.
+
+---
+
+## Estructura del Proyecto
 
 ```
 boilerplate/
 ├── .husky/          # Configuración de husky para conventional commits
-├── front/          # Vite + React + Tailwind
-├── back/           # Node.js + Express + SQLite
-├── node_modules/   # Dependencias de Node.js
-├── PROMPTS.md      # Lista para prompts usados
-├── README.md       # Documentación general
-├── package.json    # Configuración de Node.js
-├── package-lock.json # Lockfile de dependencias
-├── .gitignore      # Archivos ignorados por git
+├── front/          # Vite + React + Tailwind + Biome
+├── back/           # Node.js + Express + SQLite (node:sqlite)
+├── openspec/       # Especificaciones normativas, diseño y archivo SDD
+├── PROMPTS.md      # Documentación de Prompt Engineering y metodología SDD
+├── README.md       # Documentación general y entregables
+├── package.json    # Configuración raíz de Node.js
 └── .env.example    # Ejemplo de variables de entorno
 ```
 
-## Inicio Rápido
+## Inicio Rápido Local
 
 ### Backend
 
@@ -33,9 +78,8 @@ boilerplate/
 cd back
 npm install
 cp .env.example .env
-# Editar .env: descomentar DB_PATH=./database.sqlite
 npm run dev
-# Corre en http://localhost:3000
+# Servidor ejecutándose en http://localhost:3000
 ```
 
 ### Frontend
@@ -45,76 +89,15 @@ cd front
 npm install
 cp .env.example .env
 npm run dev
-# Corre en http://localhost:5173
+# Cliente ejecutándose en http://localhost:5173
 ```
 
-## Variables de entorno
-
-Ver `.env.example` en la raíz y en cada proyecto.
-
-## Envío de Email
-
-El sistema **simula** el envío de email — no se conecta a ningún servidor SMTP real. Cuando se crea o reenvía un contrato, el mensaje se imprime en la consola del backend (`console.log`).
-
-No es necesario configurar credenciales de correo. Para la prueba es suficiente con que el frontend muestre un `alert` o una notificación visual al usuario confirmando que el email fue enviado.
-
-## Tests
+## Ejecución de Pruebas Automatizadas
 
 ```bash
-# Backend
+# Backend (19 tests)
 cd back && npm test
 
-# Frontend
-cd front && npm test
+# Frontend (11 tests + Linter)
+cd front && npm test && npm run lint
 ```
-
----
-
-## Tarea para el Candidato
-
-Debes identificar y corregir los siguientes bugs:
-
-### Backend (`back/`)
-
-| # | Bug | Archivo | Pista |
-|---|-----|---------|-------|
-| 1 | `POST /contratos` retorna 404 | `src/routes/contratos.js` | Ruta no registrada |
-| 2 | `GET /contratos/:id` duplica datos | `src/controllers/contratosController.js` | Query innecesaria |
-| 3 | `DB_PATH` undefined en conexión | `.env` | Variable no definida |
-
-### Frontend (`front/`)
-
-| # | Bug | Archivo | Pista |
-|---|-----|---------|-------|
-| 1 | Modal no cierra tras submit | `src/components/ContratoModal.jsx` | `onClose()` comentado |
-| 2 | Tabla no responsive en móvil | `src/pages/Contratos.jsx` | Falta `overflow-x-auto` |
-| 3 | Validación inline incorrecta | `src/components/ContratoModal.jsx` | Condición invertida |
-
-## Bonus
-
-### Validaciones del formulario (`src/components/ContratoModal.jsx`)
-
-Mejora el formulario de nuevo contrato con las siguientes validaciones:
-
-1. **Campo teléfono** — solo debe aceptar dígitos (no letras ni símbolos)
-2. **Fecha de reserva** — no puede ser anterior al día de hoy
-3. **Campos vacíos** — todos los campos son obligatorios; mostrar mensaje de error bajo cada campo si están vacíos al hacer submit
-
-### Filtrado y búsqueda en el backend (`back/src/controllers/contratosController.js`)
-
-Extiende el endpoint `GET /contratos` para aceptar filtros opcionales por query params:
-
-- `GET /contratos?status=Firmado` — filtra por status
-- `GET /contratos?nombre=Juan` — filtra por nombre (búsqueda parcial, case-insensitive)
-- `GET /contratos?status=Firmado&nombre=Juan&page=1` — combinados con paginación
-
-La paginación debe seguir funcionando correctamente al aplicar filtros.
-
-### Prompt Engineering
-
-Usa IA para completar las siguientes tareas y documenta cada prompt en `PROMPTS.md` siguiendo la estructura del archivo.
-
-1. **Datos de prueba** — genera 10 registros realistas para la tabla de contratos
-2. **Email profesional** — redacta el cuerpo del email que simula `emailService.js` e intégralo en el código
-
-Para cada prompt documenta: contexto dado, prompt exacto, razonamiento de la estructura y refinamiento si hubo segunda iteración.
