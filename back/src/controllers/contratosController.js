@@ -15,9 +15,38 @@ function getContratos(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
+  const { status, nombre } = req.query;
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  let countQuery = 'SELECT COUNT(*) as count FROM contratos';
+  let dataQuery = 'SELECT * FROM contratos';
+  let countParams = [];
+  let dataParams = [];
+  let conditions = [];
+
+  if (status) {
+    conditions.push('status = ?');
+    countParams.push(status);
+    dataParams.push(status);
+  }
+
+  if (nombre) {
+    conditions.push('nombre LIKE ?');
+    const nombreSearch = `%${nombre}%`;
+    countParams.push(nombreSearch);
+    dataParams.push(nombreSearch);
+  }
+
+  if (conditions.length > 0) {
+    const whereClause = ' WHERE ' + conditions.join(' AND ');
+    countQuery += whereClause;
+    dataQuery += whereClause;
+  }
+
+  dataQuery += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+  dataParams.push(limit, offset);
+
+  const total = db.prepare(countQuery).get(...countParams).count;
+  const contratos = db.prepare(dataQuery).all(...dataParams);
 
   res.json({
     data: contratos,
@@ -33,18 +62,13 @@ function getContratos(req, res) {
 function getContrato(req, res) {
   const { id } = req.params;
 
-  // TODO: Bug #2 - N+1 query problem: this runs an extra unnecessary query
-  // Fix: just use the single query below and return contrato directly
   const contrato = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
 
   if (!contrato) {
     return res.status(404).json({ error: 'Contrato no encontrado', status: 404 });
   }
 
-  // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
-
-  res.json({ ...contrato, _duplicate: extraData });
+  res.json({ ...contrato});
 }
 
 function createContrato(req, res) {

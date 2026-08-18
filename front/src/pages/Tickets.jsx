@@ -23,35 +23,37 @@ function Tickets() {
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Tickets</h2>
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {['ID', 'Título', 'Habitación', 'Prioridad', 'Asignado', 'Status'].map((h) => (
-                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {ticketsDummy.map((t) => (
-              <tr key={t.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-500">#{t.id}</td>
-                <td className="px-4 py-3 font-medium text-gray-800">{t.titulo}</td>
-                <td className="px-4 py-3 text-gray-600">{t.habitacion}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${prioridadColors[t.prioridad]}`}>
-                    {t.prioridad}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-600">{t.asignado}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[t.status]}`}>
-                    {t.status}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                {['ID', 'Título', 'Habitación', 'Prioridad', 'Asignado', 'Status'].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {ticketsDummy.map((t) => (
+                <tr key={t.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-gray-500">#{t.id}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{t.titulo}</td>
+                  <td className="px-4 py-3 text-gray-600">{t.habitacion}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${prioridadColors[t.prioridad]}`}>
+                      {t.prioridad}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{t.asignado}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[t.status]}`}>
+                      {t.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

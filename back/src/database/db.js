@@ -1,8 +1,6 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 
-// TODO: Bug #3 - DB_PATH is undefined because it's not set in .env
-// Fix: add DB_PATH=./database.sqlite to .env file
 const dbPath = process.env.DB_PATH || path.join(__dirname, '../../database.sqlite');
 
 const db = new DatabaseSync(dbPath);

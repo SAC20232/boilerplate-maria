@@ -17,31 +17,33 @@ function Reservas() {
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Reservas</h2>
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {['ID', 'Huésped', 'Habitación', 'Entrada', 'Salida', 'Status'].map((h) => (
-                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {reservasDummy.map((r) => (
-              <tr key={r.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-gray-500">#{r.id}</td>
-                <td className="px-4 py-3 font-medium text-gray-800">{r.huesped}</td>
-                <td className="px-4 py-3 text-gray-600">{r.habitacion}</td>
-                <td className="px-4 py-3 text-gray-600">{r.entrada}</td>
-                <td className="px-4 py-3 text-gray-600">{r.salida}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[r.status]}`}>
-                    {r.status}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                {['ID', 'Huésped', 'Habitación', 'Entrada', 'Salida', 'Status'].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {reservasDummy.map((r) => (
+                <tr key={r.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-gray-500">#{r.id}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{r.huesped}</td>
+                  <td className="px-4 py-3 text-gray-600">{r.habitacion}</td>
+                  <td className="px-4 py-3 text-gray-600">{r.entrada}</td>
+                  <td className="px-4 py-3 text-gray-600">{r.salida}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[r.status]}`}>
+                      {r.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -9,9 +9,6 @@ const initialForm = {
   fecha_reserva: '',
 };
 
-// TODO: Bug #3 - Inline validation doesn't work correctly
-// The errors state is declared but validation runs only on submit, not on field change
-// Fix: add onChange validation per field or use a proper validation library
 function ContratoModal({ onClose, onSuccess }) {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -20,21 +17,36 @@ function ContratoModal({ onClose, onSuccess }) {
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    // TODO: Bug #3 - validation should clear/set error here on each keystroke
-    // Currently errors only reset on submit, giving misleading UX
+
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   }
 
   function validate() {
     const newErrors = {};
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
     if (!form.apellidos.trim()) newErrors.apellidos = 'Los apellidos son obligatorios';
-    if (!form.telefono.trim()) newErrors.telefono = 'El teléfono es obligatorio';
+    if (!form.telefono.trim()) {
+      newErrors.telefono = 'El teléfono es obligatorio';
+    } else if (!/^\d+$/.test(form.telefono)) {
+      newErrors.telefono = 'El teléfono solo debe contener números';
+    } 
     if (!form.email.trim()) {
       newErrors.email = 'El email es obligatorio';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = 'El email no es válido';
     }
-    if (!form.fecha_reserva) newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+    if (!form.fecha_reserva) {
+      newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+    } else {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const fechaSeleccionada = new Date(form.fecha_reserva + 'T00:00:00');
+      if (fechaSeleccionada < hoy) {
+        newErrors.fecha_reserva = 'La fecha no puede ser anterior al día de hoy';
+      }
+    }
     return newErrors;
   }
 
@@ -42,9 +54,7 @@ function ContratoModal({ onClose, onSuccess }) {
     e.preventDefault();
     const newErrors = validate();
 
-    // TODO: Bug #3 - Even when errors exist, the form tries to submit anyway
-    // because the condition below is inverted
-    if (Object.keys(newErrors).length === 0) {
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -55,9 +65,7 @@ function ContratoModal({ onClose, onSuccess }) {
     try {
       const { data } = await contratosApi.create(form);
       onSuccess(data);
-      // TODO: Bug #1 - Modal doesn't close after successful submit
-      // Fix: uncomment the line below
-      // onClose();
+      onClose();
     } catch (err) {
       console.error('Error creating contrato:', err);
       setErrors({ submit: err.response?.data?.error || 'Error al crear el contrato' });

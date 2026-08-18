@@ -8,7 +8,13 @@ const api = axios.create({
 });
 
 export const contratosApi = {
-  getAll: (page = 1) => api.get(`/contratos?page=${page}`),
+  getAll: (page = 1, filters = {}) => {
+    const params = new URLSearchParams({ page, ...filters });
+    for (const [key, value] of params.entries()) {
+      if (!value) params.delete(key);
+    }
+    return api.get(`/contratos?${params.toString()}`);
+  },
   getById: (id) => api.get(`/contratos/${id}`),
   create: (data) => api.post('/contratos', data),
   update: (id, data) => api.put(`/contratos/${id}`, data),
