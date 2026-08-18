@@ -15,9 +15,23 @@ function getContratos(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
+  const { status, nombre } = req.query;
+  let baseQuery = 'WHERE 1=1';
+  const queryParams = [];
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  if (status) {
+    baseQuery += ' AND status = ?';
+    queryParams.push(status);
+  }
+
+  if (nombre) {
+    baseQuery += ' AND (nombre LIKE ? OR apellidos LIKE ?)';
+    queryParams.push(`%${nombre}%`, `%${nombre}%`);
+  }
+
+  const total = db.prepare(`SELECT COUNT(*) as count FROM contratos ${baseQuery}`).get(...queryParams).count;
+  const sql = `SELECT * FROM contratos ${baseQuery} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+  const contratos = db.prepare(sql).all(...queryParams, limit, offset);
 
   res.json({
     data: contratos,
@@ -41,10 +55,7 @@ function getContrato(req, res) {
     return res.status(404).json({ error: 'Contrato no encontrado', status: 404 });
   }
 
-  // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
-
-  res.json({ ...contrato, _duplicate: extraData });
+  res.json(contrato);
 }
 
 function createContrato(req, res) {
