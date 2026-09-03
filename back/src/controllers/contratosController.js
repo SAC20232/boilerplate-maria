@@ -15,9 +15,30 @@ function getContratos(req, res) {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
+  const { status, nombre } = req.query;
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM contratos').get().count;
-  const contratos = db.prepare('SELECT * FROM contratos ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  const conditions = [];
+  const params = [];
+
+  if (status) {
+    conditions.push('status = ?');
+    params.push(status);
+  }
+
+  if (nombre) {
+    conditions.push('nombre LIKE ? COLLATE NOCASE');
+    params.push(`%${nombre}%`);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const total = db
+    .prepare(`SELECT COUNT(*) as count FROM contratos ${whereClause}`)
+    .get(...params).count;
+
+  const contratos = db
+    .prepare(`SELECT * FROM contratos ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+    .all(...params, limit, offset);
 
   res.json({
     data: contratos,
