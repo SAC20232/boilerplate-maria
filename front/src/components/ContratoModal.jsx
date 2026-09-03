@@ -42,9 +42,7 @@ function ContratoModal({ onClose, onSuccess }) {
     e.preventDefault();
     const newErrors = validate();
 
-    // TODO: Bug #3 - Even when errors exist, the form tries to submit anyway
-    // because the condition below is inverted
-    if (Object.keys(newErrors).length === 0) {
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
