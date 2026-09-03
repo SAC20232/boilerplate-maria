@@ -9,8 +9,6 @@ const statusColors = {
   Cancelado: 'bg-red-100 text-red-700',
 };
 
-// TODO: Bug #2 - Table is not responsive on screens < 768px
-// Fix: wrap table in a div with overflow-x-auto and add min-width to table
 function Contratos() {
   const [contratos, setContratos] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
@@ -67,52 +65,52 @@ function Contratos() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {/* TODO: Bug #2 - missing overflow-x-auto wrapper for mobile responsiveness */}
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {['Nombre', 'Apellidos', 'Teléfono', 'Email', 'Fecha Reserva', 'Contrato', 'Status', 'Acciones'].map((h) => (
-                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-sm">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">Cargando...</td>
+                {['Nombre', 'Apellidos', 'Teléfono', 'Email', 'Fecha Reserva', 'Contrato', 'Status', 'Acciones'].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium whitespace-nowrap">{h}</th>
+                ))}
               </tr>
-            ) : contratos.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-400">No hay contratos</td>
-              </tr>
-            ) : (
-              contratos.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-800">{c.nombre}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.apellidos}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.telefono}</td>
-                  <td className="px-4 py-3 text-gray-600">{c.email}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(c.fecha_reserva)}</td>
-                  <td className="px-4 py-3 text-gray-600 text-xs">{c.contrato || '-'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[c.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <button onClick={() => handleAction('editar', c.id)} className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">Editar</button>
-                      <button onClick={() => handleAction('reenviar', c.id)} className="px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded hover:bg-gray-100">Reenviar</button>
-                      <button onClick={() => handleAction('cancelar', c.id)} className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100">Cancelar</button>
-                      <button onClick={() => handleAction('firmar', c.id)} className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100">Firmar</button>
-                    </div>
-                  </td>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">Cargando...</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-
+              ) : contratos.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-gray-400">No hay contratos</td>
+                </tr>
+              ) : (
+                contratos.map((c) => (
+                  <tr key={c.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-800">{c.nombre}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.apellidos}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.telefono}</td>
+                    <td className="px-4 py-3 text-gray-600">{c.email}</td>
+                    <td className="px-4 py-3 text-gray-600">{formatDate(c.fecha_reserva)}</td>
+                    <td className="px-4 py-3 text-gray-600 text-xs">{c.contrato || '-'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[c.status] || 'bg-gray-100 text-gray-700'}`}>
+                      {c.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <button onClick={() => handleAction('editar', c.id)} className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">Editar</button>
+                        <button onClick={() => handleAction('reenviar', c.id)} className="px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded hover:bg-gray-100">Reenviar</button>
+                        <button onClick={() => handleAction('cancelar', c.id)} className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100">Cancelar</button>
+                        <button onClick={() => handleAction('firmar', c.id)} className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100">Firmar</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t">
             <p className="text-sm text-gray-500">
