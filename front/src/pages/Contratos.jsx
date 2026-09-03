@@ -36,7 +36,10 @@ function Contratos() {
     try {
       if (action === 'cancelar') await contratosApi.cancelar(id);
       if (action === 'firmar') await contratosApi.firmar(id);
-      if (action === 'reenviar') await contratosApi.reenviar(id);
+      if (action === 'reenviar') {
+        const response = await contratosApi.reenviar(id);
+        alert(response.data.message)
+      }
       if (action === 'editar') {
         // TODO: implement edit modal
         alert(`Editar contrato #${id} - funcionalidad pendiente`);
@@ -50,6 +53,7 @@ function Contratos() {
 
   function handleNewContrato(newContrato) {
     setContratos((prev) => [newContrato, ...prev]);
+    alert('Email enviado')
   }
 
   return (
