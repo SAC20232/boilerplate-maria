@@ -9,32 +9,55 @@ const initialForm = {
   fecha_reserva: '',
 };
 
-// TODO: Bug #3 - Inline validation doesn't work correctly
-// The errors state is declared but validation runs only on submit, not on field change
-// Fix: add onChange validation per field or use a proper validation library
 function ContratoModal({ onClose, onSuccess }) {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const validate_telefono = (value) => !/^\d+$/.test(value);
 
   function handleChange(e) {
     const { name, value } = e.target;
+    
+    if (name === 'telefono' && value !== '' && validate_telefono(value))
+      return;
+    
+    // Actualiza el valor del formulario
     setForm((prev) => ({ ...prev, [name]: value }));
-    // TODO: Bug #3 - validation should clear/set error here on each keystroke
-    // Currently errors only reset on submit, giving misleading UX
+    
+    // Limpia el error de ese campo específico en cuanto el usuario empieza a escribir
+    if(errors[name])
+      setErrors((prev) => ({ ...prev, [name]: null }));
   }
 
   function validate() {
     const newErrors = {};
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
     if (!form.apellidos.trim()) newErrors.apellidos = 'Los apellidos son obligatorios';
-    if (!form.telefono.trim()) newErrors.telefono = 'El teléfono es obligatorio';
+    if (!form.telefono.trim()) {
+      newErrors.telefono = 'El teléfono es obligatorio';
+    } else if (validate_telefono(form.telefono)) {
+      newErrors.telefono = 'El teléfono solo debe contener números';
+    }
     if (!form.email.trim()) {
       newErrors.email = 'El email es obligatorio';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = 'El email no es válido';
     }
-    if (!form.fecha_reserva) newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+    if (!form.fecha_reserva){
+      newErrors.fecha_reserva = 'La fecha de reserva es obligatoria';
+    } else {
+      // Obtenemos la fecha actual y reseteamos la hora para comparar solo el día
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      // El input type="date" devuelve 'YYYY-MM-DD'. Lo dividimos para evitar problemas de zona horaria.
+      const [year, month, day] = form.fecha_reserva.split('-');
+      const fechaIngresada = new Date(year, month - 1, day); // month - 1 porque los meses en JS van del 0 al 11
+
+      if (fechaIngresada < hoy) {
+        newErrors.fecha_reserva = 'La fecha no puede ser en el pasado';
+      }
+    }
     return newErrors;
   }
 
@@ -87,6 +110,7 @@ function ContratoModal({ onClose, onSuccess }) {
                 name={field.name}
                 value={form[field.name]}
                 onChange={handleChange}
+                min={field.type === 'date' ? new Date().toISOString().split('T')[0] : undefined}
                 className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors[field.name] ? 'border-red-400' : 'border-gray-300'
                 }`}
