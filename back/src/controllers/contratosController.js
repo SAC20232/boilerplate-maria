@@ -42,8 +42,8 @@ function getContrato(req, res) {
   }
 
   // BUG: Unnecessary extra query duplicating data (n+1 problem)
-  const extraData = db.prepare('SELECT * FROM contratos WHERE id = ?').get(id);
-
+  //Se elimino la Query innecesaria que hacia que se duplicaran los datos
+  
   res.json({ ...contrato, _duplicate: extraData });
 }
 

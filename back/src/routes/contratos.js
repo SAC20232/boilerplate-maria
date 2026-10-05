@@ -13,6 +13,8 @@ const {
 
 router.get('/', getContratos);
 router.get('/:id', getContrato);
+//Se agrega la ruta createContrato con el metodo POST para solucionar el error 404 que nos indica que no encontrada
+router.post('/', createContrato);
 router.put('/:id', updateContrato);
 router.delete('/:id', deleteContrato);
 router.post('/:id/reenviar', reenviarContrato);

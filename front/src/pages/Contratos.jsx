@@ -68,7 +68,9 @@ function Contratos() {
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {/* TODO: Bug #2 - missing overflow-x-auto wrapper for mobile responsiveness */}
-        <table className="w-full text-sm">
+
+        {/*Se agrego la clase faltante en la tabla para que sea responsive en dispositivos moviles*/}
+        <table className="w-full text-sm overflow-x-auto">
           <thead className="bg-gray-50">
             <tr>
               {['Nombre', 'Apellidos', 'Teléfono', 'Email', 'Fecha Reserva', 'Contrato', 'Status', 'Acciones'].map((h) => (

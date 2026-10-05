@@ -26,9 +26,21 @@ function ContratoModal({ onClose, onSuccess }) {
 
   function validate() {
     const newErrors = {};
+
+    //Se agrego una validacion que lanza una alerta que dice "Todos los campos son obligatorios"
+    if(!form.nombre.trim() && !form.apellidos.trim() 
+      && !form.telefono.trim() && !form.email.trim()) alert('Todos los campos son obligatorios');
+
     if (!form.nombre.trim()) newErrors.nombre = 'El nombre es obligatorio';
     if (!form.apellidos.trim()) newErrors.apellidos = 'Los apellidos son obligatorios';
-    if (!form.telefono.trim()) newErrors.telefono = 'El teléfono es obligatorio';
+
+    if (!form.telefono.trim()) {
+      newErrors.telefono = 'El teléfono es obligatorio';
+    }
+    else if(!/^\d+$/.test(form.telefono)) {
+      newErrors.telefono = 'El telefono solo debe tener numeros';
+    }
+
     if (!form.email.trim()) {
       newErrors.email = 'El email es obligatorio';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
@@ -44,7 +56,9 @@ function ContratoModal({ onClose, onSuccess }) {
 
     // TODO: Bug #3 - Even when errors exist, the form tries to submit anyway
     // because the condition below is inverted
-    if (Object.keys(newErrors).length === 0) {
+
+    //La condicion debe ser mayor a cero
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
@@ -57,7 +71,9 @@ function ContratoModal({ onClose, onSuccess }) {
       onSuccess(data);
       // TODO: Bug #1 - Modal doesn't close after successful submit
       // Fix: uncomment the line below
-      // onClose();
+      
+      //Se descomento el fragmento onClose() para que funcione y cierre el modal adecuadamente
+      onClose();
     } catch (err) {
       console.error('Error creating contrato:', err);
       setErrors({ submit: err.response?.data?.error || 'Error al crear el contrato' });
